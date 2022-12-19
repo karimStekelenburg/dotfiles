@@ -1,0 +1,43 @@
+wtf:
+  colors:
+    border:
+      focusable: darkslateblue
+      focused: orange
+      normal: gray
+  grid:
+    columns: [1, 32, 32, 32, 32]
+    rows: [1, 10, 10, 4, 4, 90]
+  refreshInterval: 1
+  mods:
+    github:
+      type: github
+      apiKey: "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"
+      baseURL: ""
+      customQueries:
+        othersPRs:
+          title: "Others Pull Requests"
+          filter: "is:open is:pr -author:wtfutil"
+      enabled: true
+      enableStatus: true
+      position:
+        top: 0
+        left: 0
+        height: 3
+        width: 3
+      refreshInterval: 5m
+      repositories:
+        - "animo/dir-wallet"
+        - "animo/awesome-self-sovereign-identity"
+        - "hyperledger/aries-framework-javascript"
+      uploadURL: ""
+      username: "karimStekelenburg"
+    docker:
+      type: docker
+      enabled: true
+      labelColor: lightblue
+      position:
+        top: 0
+        left: 3
+        height: 3
+        width: 2
+      refreshInterval: 1s

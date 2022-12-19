@@ -1,0 +1,7 @@
+---
+configurations:
+  default:
+    endpoint: "https://agent.community.animo.id"
+    api_key: ~
+    auth_token: ~
+    agent: aca-py
