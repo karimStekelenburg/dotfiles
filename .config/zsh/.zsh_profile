@@ -1,0 +1,157 @@
+# ~/.zsh_profile
+# 
+
+# General tooling aliases
+alias ls='lsd -1'
+alias lt='ls --tree'
+
+# ZSH config aliases
+alias zrc='code ~/.zshrc'
+alias zprofile='code ~/.zsh_profile'
+alias zenv='code ~/.zshenv'
+alias zworkspace='code ~/.zshrc ~/.zshenv ~/.zsh_profile'
+
+alias skhdrc='code ~/.config/skhd/skhdrc'
+alias yabairc='code ~/.config/yabai/yabairc'
+
+alias src='source ~/.zshrc'
+
+# alias em='emacsclient -nc -a emacs'
+
+alias qrpaste='zbarimg -q --raw <(pngpaste -)'
+alias tree='tree -C --gitignore'
+
+alias typora="open -a typora"
+
+alias gwip='git add -A; git rm $(git ls-files --deleted) 2> /dev/null; git commit --no-verify --no-gpg-sign --message "--wip-- [skip ci]"'
+
+alias gunwip='git rev-list --max-count=1 --format="%s" HEAD | grep -q "\--wip--" && git reset HEAD~1'
+
+alias rgf='rg --files | rg'
+  
+alias e="emacs -s root-server"
+alias ec="emacsclient -a '' -n"
+alias ekill="emacs --kill"
+alias eckill="emacsclient -e '(kill-emacs)'"
+
+# skhd
+alias skhd-down="skhd --stop-service"
+alias skhd-up="skhd --start-service"
+alias skhd-reboot="skhd --restart-service"
+alias skhd-out="tail -f cat /tmp/skhd_karimstekelenburg.out.log"
+alias skhd-err="tail -f cat /tmp/skhd_karimstekelenburg.err.log"
+alias yabai-out="tail -f cat /tmp/yabai_karimstekelenburg.out.log"
+alias yabai-err="tail -f cat /tmp/yabai_karimstekelenburg.err.log"
+
+# ==== DESIRED ==== #
+# 1. Close all emacs instances
+# 2. Open Emacs.app (opens GUI app frame & starts server)
+# 3. Run `emacsclient myfile.txt` (opens myfile.txt in EXISTING GUI frame)
+# 4. Run `emacsclient -c myfile.txt` (opens myfile.txt in NEW GUI frame, same server)
+
+# ==== NOT DESIRED ==== #
+# 1. Close all emacs instances
+# 2. Run `emacs --daemon` (start daemon server from terminal)
+# 3. Run `emacsclient myfile.txt` (opens myfile.txt in TERMINAL frame)
+# 4. Run `emacsclient -c myfile.txt` (opens myfile.txt in TERMINAL frame)
+
+# # Open man page in emacs
+# function man () {
+#     emacsclient -nw -e "(man \"$1\")"
+# }
+
+
+# Similar to `gunwip` but recursive "Unwips" all recent `--wip--` commits not just the last one
+function gunwipall() {
+  local _commit=$(git log --grep='--wip--' --invert-grep --max-count=1 --format=format:%H)
+
+  # Check if a commit without "--wip--" was found and it's not the same as HEAD
+  if [[ "$_commit" != "$(git rev-parse HEAD)" ]]; then
+    git reset $_commit || return 1
+  fi
+}
+
+
+runwipall() {
+    # Find all commits with --wip-- at the start of their message
+    local WIP_COMMITS=$(git log --grep='^--wip--' --pretty=format:'%h')
+
+    # Check if WIP_COMMITS is empty
+    if [ -z "$WIP_COMMITS" ]; then
+        echo "No commits found with messages starting with --wip--."
+        return
+    fi
+
+    # Convert commits to an array
+    local WIP_COMMIT_ARRAY=(${(z)WIP_COMMITS})
+
+    # Start with the oldest commit for rebase
+    local OLDEST_COMMIT=${WIP_COMMIT_ARRAY[-1]}
+
+    # If you are sure you want to include the oldest commit in the rebase, you can use its parent
+    # This command finds the parent of the oldest commit
+    local OLDEST_COMMIT_PARENT=$(git rev-parse "${OLDEST_COMMIT}^")
+
+    # Automate the rebase todo list modification
+    GIT_SEQUENCE_EDITOR="sed -i '' 's/pick/reword/g'" git rebase -i "$OLDEST_COMMIT_PARENT"
+}
+
+
+enableSleep() {
+  # disable macOs default behaviour that makes the OS go to sleep when the laptop is being closed while an external display is connected.
+  sudo pmset -a sleep 1
+  sudo pmset -a hibernatemode 3
+  sudo pmset -a disablesleep 0
+}
+
+disableSleep() {
+  # reenable the macOs default behaviour that makes the OS go to sleep when the laptop is being closed while an external display 
+  sudo pmset -a sleep 0
+  sudo pmset -a hibernatemode 0
+  sudo pmset -a disablesleep 1
+}
+
+
+batchConvertMp3toWav() {
+for file in $1/*.mp3; do
+    base="${file%.*}"   # Remove the file extension
+    afconvert -d LEI16 -f 'WAVE' "$file" "${base}.wav"
+done
+
+
+}
+
+# Function to watch the tree structure of the current directory
+function watch_tree() {
+  while true; do clear; tree; sleep 5; done
+}
+
+# Funtion to search the command history
+function h() {
+    # check if we passed any parameters
+    if [ -z "$*" ]; then
+        # if no parameters were passed print entire history
+        history 1
+    else
+        # if words were passed use it as a search
+        history 1 | rg --color=auto "$@"
+    fi
+}
+
+# Function to fuzzy search command history
+function fh() {
+    eval $( ([ -n "$ZSH_NAME" ] && fc -l 1 || history) | fzf +s --tac | sed 's/ *[0-9]* *//')
+}
+
+
+
+
+# Set a scene in Home Assistant
+set-scene() {
+  curl -X POST -H "Authorization: Bearer $HASS_TOKEN" -H "Content-Type: application/json" -d "{\"entity_id\": \"scene.$1\"}" http://192.168.178.23:8123/api/services/scene/turn_on
+}
+
+active-scene() {
+  curl -X GET -H "Authorization: Bearer $HASS_TOKEN" http://192.168.178.23:8123/api/states | jq -r '.[] | select(.entity_id | startswith("scene.")) |
+select(.state == "on") | .entity_id'
+}

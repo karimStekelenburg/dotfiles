@@ -1,11 +1,18 @@
 #!/usr/bin/env bash
 
+. ~/.config/modes.sh init_default_mode
+
+printf "yabai: loading scripting additions...\\n"
+# !! this has to stay on top !!
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+printf "yabai: configuration loaded...\\n"
+
 set -x
 
 # ====== Variables =============================
 
 declare -A gaps
-declare -A color
 
 gaps["top"]="10"
 gaps["bottom"]="10"
@@ -13,19 +20,30 @@ gaps["left"]="10"
 gaps["right"]="10"
 gaps["inner"]="20"
 
-color["focused"]="0xE0808080"
-color["normal"]="0x00010101"
-color["preselect"]="0xccFFFF00"
-
-
-
-
+$mouse_mod
 # ====== Notes =============================
 # Stack the given window on top of the focused window
 # yabai -m window --stack <window_id>
 #
 # Unstack the given window
+# Global Variables ########################################################################################################################
 
+export external_bar_height="60"    # Height of external bar in pt                                    (usage: 24/16/any number)
+export external_bar_position="top" # posit
+
+export shadow_toggle="off" # Determines wether window shadows are on                         (usage: on/off)
+export window_mod="alt"
+export mouse_mod="cmd"        # key that when pressed, mouse can be used to move and resize     (usage: cmd/alt/ctrl/shift)
+export border_toggle="on"     # Determines wether borders for active windows are on             (usage: on/off)
+export border_width="1"       # Determines the width of the active window's border              (usage: 2/5/any number)
+export border_radius="11"     # radius of the active window's border                            (usage: 11/0/any number)
+export opacity_toggle="off"   # Detriments wether opacity based focus is on                     (usage: on/off)
+export layout="float"         # Layout of windows                                               (usage: bsp/float/stack)
+export gap_width="17"         # width of window gaps                                            (usage: 17/8/any number)
+export animation_duration="0" # Window animation duration                                       (usage: 0.0/0.3/0.5)
+export autoraise_toggle="off" # turn autoraise on or off                                        (usage: on/off)
+
+# Global Variables XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 # ====== Functions =============================
 
@@ -33,25 +51,12 @@ function focused_window_id() {
 	return $(yabai -m query --windows --window | jq -r '.id')
 }
 
-
-
 # Uncomment to refresh ubersicht widget on workspace change
 # Make sure to replace WIDGET NAME for the name of the ubersicht widget
 #ubersicht_spaces_refresh_command="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"WIDGET NAME\"'"
 
-
-
 # ============= DEBUG MODE ============= #
-# yabai -m config debug_output on
-
-
-# ===== Loading Scripting Additions ============
-printf "yabai: loading scripting additions...\\n"
-sudo yabai --load-sa
-printf "yabai: configuration loaded...\\n"
-
-# See: https://github.com/koekeishiya/yabai/wiki/Installing-yabai-(latest-release)#macos-big-sur---automatically-load-scripting-addition-on-startup
-yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+yabai -m config debug_output on
 
 # ===== Tiling setting =========================
 
@@ -71,9 +76,9 @@ yabai -m config window_border on
 yabai -m config window_border_width 7
 # yabai -m config active_window_border_color  ${color["focused"]}
 # yabai -m config normal_window_border_color  ${color["normal"]}
-yabai -m config insert_feedback_color ${color["preselect"]}
+yabai -m config insert_feedback_color ${color["focused"]}
 
-yabai -m config split_ratio 0.90
+yabai -m config split_ratio 0.50
 
 yabai -m config auto_balance off
 
@@ -84,36 +89,21 @@ yabai -m config mouse_action2 resize
 yabai -m config mouse_follows_focus off
 yabai -m config focus_follows_mouse autoraise
 
-# Setup spaces
-for _ in $(yabai -m query --spaces | jq '.[].index | select(. > 6)'); do
-	yabai -m space --destroy 7
-done
+# # Setup spaces
+# setup_space 1 emacs
+# setup_space 2 web
+# setup_space 3 slack
+# setup_space 4 media
+# setup_space 5 other
 
-function setup_space {
-	local idx="$1"
-	local name="$2"
-	local space=
-	echo "setup space $idx : $name"
+# yabai -m rule --add app="^(Safari|Finder|Todoist)$" manage=off
+# yabai -m rule --add app="^Emacs$" space=1
+# yabai -m rule --add app="^Brave Browser$" space=2
+# yabai -m rule --add app="^Slack$" space=3
+# yabai -m rule --add app="^Spotify$" space=4
 
-	space=$(yabai -m query --spaces --space "$idx")
-	if [ -z "$space" ]; then
-		yabai -m space --create
-	fi
-
-	yabai -m space "$idx" --label "$name"
-}
-
-setup_space 1 emacs
-setup_space 2 web
-setup_space 3 slack
-setup_space 4 media
-setup_space 5 other
-
-yabai -m rule --add app="^(Safari|Finder|Todoist)$" manage=off
-yabai -m rule --add app="^Emacs$" space=1
-yabai -m rule --add app="^Brave Browser$" space=2
-yabai -m rule --add app="^Slack$" space=3
-yabai -m rule --add app="^Spotify$" space=4
+# # scratchpad
+# yabai -m rule --add app="^Spotify$" scratchpad=spotify grid=11:11:1:1:9:9
 
 # ===== Exclude Apps ===========================
 
@@ -121,11 +111,10 @@ yabai -m rule --add app="^Spotify$" space=4
 # configure sketchybar integration
 yabai -m config external_bar all:40:0
 
-
 # mouse support
 
 # set mouse interaction modifier key (default: fn)
-yabai -m config mouse_modifier fn
+yabai -m config mouse_modifier cmd
 
 # set modifier + left-click drag to move window (default: move)
 yabai -m config mouse_action1 resize
@@ -138,8 +127,9 @@ yabai -m config active_window_opacity 1.0
 yabai -m config normal_window_opacity 0.9
 
 # mark window as scratchpad using rule and set size (scratchpad windows are manage=off automatically)
-yabai -m rule --add app="^Spotify$" scratchpad=spotify grid=11:11:1:1:9:9
+yabai -m rule --add app="^iTerm2$" title="scratchpad" scratchpad=iterm grid=11:11:1:1:9:9
+yabai -m rule --add app="^Arc$" subrole="AXStandardWindow" scratchpad=arc grid=11:11:1:1:9:9
 
-borders active_color=${color["preselect"]} inactive_color=${color["normal"]} width=10.0 style=round blur_radius=0.1 &
+borders active_color=${color["focused"]} inactive_color=${color["default_mode"]} width=10.0 style=round blur_radius=0.1 &
 
 osascript -e 'display notification "Configuration reload" with title "yabai"'

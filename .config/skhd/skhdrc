@@ -1,0 +1,70 @@
+#!/usr/bin/env bash
+#
+#           $$\       $$\             $$\
+#           $$ |      $$ |            $$ |
+#  $$$$$$$\ $$ |  $$\ $$$$$$$\   $$$$$$$ | $$$$$$\   $$$$$$$\
+# $$  _____|$$ | $$  |$$  __$$\ $$  __$$ |$$  __$$\ $$  _____|
+# \$$$$$$\  $$$$$$  / $$ |  $$ |$$ /  $$ |$$ |  \__|$$ /
+#  \____$$\ $$  _$$<  $$ |  $$ |$$ |  $$ |$$ |      $$ |
+# $$$$$$$  |$$ | \$$\ $$ |  $$ |\$$$$$$$ |$$ |      \$$$$$$$\
+# \_______/ \__|  \__|\__|  \__| \_______|\__|       \_______|
+
+### DEFAULT MODE ###
+
+:: default : . $HOME/.config/modes.sh && init_default_mode
+
+# Changing focus
+alt - h [
+* : yabai -m window --focus west
+"Emacs" ~
+]
+alt - l [
+* : yabai -m window --focus east
+"Emacs" ~
+]
+alt - k [
+* : yabai -m window --focus north
+"Emacs" ~
+]
+alt - j [
+* : yabai -m window --focus south
+"Emacs" ~
+]
+
+### WINDOW MANAGEMENT MODE ###
+:: wm_mode @ : . $HOME/.config/modes.sh && init_wm_mode
+
+alt - 0x32 ; wm_mode
+
+wm_mode <alt - 0x32 ; default
+
+# Swapping windows
+alt + shift - h: yabai -m window --swap west
+alt + shift - j: yabai -m window --swap south
+alt + shift - k: yabai -m window --swap north
+alt + shift - l: yabai -m window --swap east
+
+# Setting insertion point
+alt + cmd - h: yabai -m window --insert west
+alt + cmd - j: yabai -m window --insert south
+alt + cmd - k: yabai -m window --insert north
+alt + cmd - l: yabai -m window --insert east
+
+alt + cmd - s: yabai -m window --insert stack
+
+# scratchpads
+
+cmd + alt - r : yabai -m window --scratchpad recover
+
+# Toggle iTerm2
+alt - 1 : yabai -m window --toggle iterm || $(. $HOME/.config/open-scratchpad-terminal.sh && open_iterm_scratchpad)
+alt - 2 : yabai -m window --toggle arc || $(. $HOME/.config/arc-scratchpad.sh && open_arc_scratchpad )
+
+
+# float / unfloat window and center on screen
+shift + alt - t : yabai -m window --toggle float; yabai -m window --grid 4:4:1:1:2:2
+
+alt - t : yabai -m window --toggle float; yabai -m window --grid 20:20:1:1:18:18
+
+# reload yabai config
+ctrl + alt + cmd - r: yabai --restart-service
