@@ -26,3 +26,9 @@
 (defun yabai-window-down ()
   (interactive)
   (yabai-move-on-error "south" #'windmove-down))
+
+;; Using map! for keybindings
+(map! :desc "Move window left"  "M-h" #'yabai-window-left
+      :desc "Move window down"  "M-j" #'yabai-window-down
+      :desc "Move window up"    "M-k" #'yabai-window-up
+      :desc "Move window right" "M-l" #'yabai-window-right)

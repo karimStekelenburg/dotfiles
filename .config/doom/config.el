@@ -60,9 +60,23 @@
 (global-org-modern-mode)
 
 ;; auto save session when idle for 10 sec
-(run-with-idle-timer 10 t #'doom-save-session)
+(run-with-idle-timer 120 t #'doom-save-session)
 ;; automatically load last session on start
-(desktop-save-mode 1)
+;;(desktop-save-mode 1)
+
+;; (add-hook 'after-init-hook
+;;           (lambda ()
+;;             (doom-modeline-mode)
+;;             ;; Add other functions here
+;;             (other-function-1)
+;;             (other-function-2)))
+
+;; (setq doom-modeline-github t)
+(setq doom-modeline-time t)
+(setq doom-modeline-vcs-max-length 12)
+(setq doom-modeline-bar-width 2)
+(setq doom-modeline-window-width-limit 85)
+(setq doom-modeline-hud t)
 
 
 ;; and-drop-to dired `add`
